@@ -1,7 +1,7 @@
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import matplotlib.pyplot as plt
-import tools.SubspaceSelection as FB
+import tools.SubspaceSelection_2D as FB
 from collections import defaultdict
 from models.Generator import Generator
 from models.Discriminator import Discriminator
@@ -19,7 +19,7 @@ import csv
 from tqdm import tqdm
 
 class GSAAL:
-    def __init__(self, k = 20, batch_size = 500, stop_epochs = 30, lr_g = 0.001, lr_d = 0.01, seed = 777, momentum = 0.9):
+    def __init__(self, k = 20, batch_size = 500, stop_epochs = 30, lr_g = 0.001, lr_d = 0.01, seed = 777, momentum = 0.9, dataset="Arrhythmia"):
         self.storage = locals()
         self.train_history = defaultdict(list)
         self.k = k
@@ -29,10 +29,11 @@ class GSAAL:
         self.lr_d = lr_d
         self.momentum = momentum
         self.seed = seed
+        self.dataset = dataset
         
 
     def fit(self, X, snap_path_res, snap_path_csv, X_test=None, Y_test=None):
-        """Fit the GSAAL model to the data X. X_test and Y_test are optional. A refit is possible (kind of).
+        """Fit the GSAAL model to the data X.
         Args:
         X : numpy array of shape (n_samples, n_features)
             The input samples.
@@ -133,7 +134,11 @@ class GSAAL:
                 
                 if epoch + 1 > self.stop_epochs:
                     stop = 1
-                    
+            
+            if epoch % 10 == 0:
+                self.snapshot(result_path="experiments/heatmaps/{}".format(self.dataset), 
+                              csv_path="{}_story.csv".format(self.dataset), dataset=self.dataset, epoch=epoch, while_training=True) 
+                
             self.train_history["generator_loss"].append(generator_loss)
             discriminator_loss = np.array([self.storage['sub_discriminator_loss' + str(id)]
                                            for id in range(self.k)]).sum()/(self.k*num_batches)
@@ -142,36 +147,10 @@ class GSAAL:
                 self.train_history["sub_discriminator_loss" + str(id)].append(self.storage["sub_discriminator_loss" + str(id)] / num_batches)
             ### ---------- END TRAINING LOOP ---------- ###
             
+            print("Number of discriminators stopped: " + str(np.array([self.storage["stop" + str(id)] for id in range(self.k)]).sum()) + " out of " + str(self.k))  
             
-            
-            ### ---------- Calculate current AUC over Test set ---------- ###
-            
-            if X_test is not None and Y_test is not None:
-                p_value = self.storage["sub_discriminator" + str(0)].predict(X_test.to_numpy()[:,self.subspaces[0]], verbose=0)
-                for id in range(1,self.k):
-                    p_value += self.storage["sub_discriminator" + str(id)].predict(X_test.to_numpy()[:,self.subspaces[id]],verbose=0)
-                p_value /= self.k
-                print("Number of discriminators stopped: " + str(np.array([self.storage["stop" + str(id)] for id in range(self.k)]).sum()) + " out of " + str(self.k))  
-
-                result = np.concatenate((p_value,Y_test), axis=1)
-                result = pd.DataFrame(result, columns=["p","y"])
-                result = result.sort_values("p", ascending=True)
-                inlier_parray = result.loc[lambda df: df.y == 0, 'p'].values
-                outlier_parray = result.loc[lambda df: df.y == 1, 'p'].values
-                sum = 0.0
-                for o in outlier_parray:
-                    for i in inlier_parray:
-                        if o < i:
-                            sum += 1.0
-                        elif o == i:
-                            sum += 0.5
-                        else:
-                            sum += 0
-                AUC = '{:.4f}'.format(sum / (len(inlier_parray) * len(outlier_parray)))
-                self.train_history['auc'].append((sum / (len(inlier_parray) * len(outlier_parray))))
-                print('AUC:{}'.format(AUC))
-            if np.array([self.storage["stop" + str(i)] for i in range(self.k)]).sum() == self.k:
-                break
+            #if np.array([self.storage["stop" + str(i)] for i in range(self.k)]).sum() == self.k:
+            #    break
                 
 
     def predict(self, X):
@@ -217,15 +196,12 @@ class GSAAL:
         plt.style.use('ggplot')
         dy = train_history['discriminator_loss']
         gy = train_history['generator_loss']
-        auc_y = train_history['auc']
         for id in range(k):
             self.storage['dy_' + str(id)] = train_history['sub_discriminator_loss{}'.format(id)]
         x = np.linspace(1, len(gy), len(gy))
         fig, ax = plt.subplots()
         ax.plot(x, gy, color="cornflowerblue", label="Generator loss", linewidth=2)
         ax.plot(x, dy,color="crimson", label="Average discriminator loss", linewidth=2)
-        if auc_y != []:
-            ax.plot(x, auc_y, color="yellow", linewidth = 3, label="ROC AUC")
         plt.xlabel("Epoch")
         plt.ylabel("Loss")
         ax.legend(loc="upper right")
@@ -236,47 +212,37 @@ class GSAAL:
             
         ax_all.plot(x, gy, color="cornflowerblue", label="Generator loss", linewidth=2)
         ax_all.plot(x, dy,color="crimson", label="Average discriminator loss", linewidth=2)
-        if auc_y != []:
-            ax_all.plot(x, auc_y, color="yellow", linewidth = 3, label="ROC AUC")
         ax_all.legend(loc="upper right")
         plt.savefig(result_path + "/" " train_history " + str(seed) + ".pdf",format="pdf",dpi=1200)    
     
 
-    def snapshot(self, result_path, csv_path):
+    def snapshot(self, result_path, csv_path, dataset,epoch, while_training=False):
         """Creates the snapshot of the model. It saves the plot, the parameters and the training history in the result_path folder as csv files and pdf images.
 
         Args:
         result_path : string containing the Path to the result folder. If the folder does not exist, it will be created.
         csv_path : string containing the name of the csv file where the parameters will be saved. If the file does not exist, it will be created.
         """
+        if while_training==False:
+            for i in range(self.k):
+                self.storage["sub_discriminator" + str(i)].save(f"trained_models/{dataset}/disc_{i}.keras")
+        else:
+            for i in range(self.k):
+                self.storage["sub_discriminator" + str(i)].save(f"trained_models/{dataset}/epoch{epoch}/disc_{i}.keras")
+            return
+
         if not os.path.exists(result_path + "/sub_disc_stories/"):
             os.makedirs(result_path + "/sub_disc_stories/")
-        
-        with open(result_path + csv_path, "a", newline = "") as csv_file:
-            writer = csv.writer(csv_file)
-            writer. writerow(["Seed", "LR_G", "LR_D", "Momentum", "k", "stop_epochs", "AUC_GSAAL"])
-
-        #Save the parameters file (with the last auc obtained if it exists)
-        params_csv = [self.seed, self.lr_g, self.lr_d, self.momentum, self.k, self.stop_epochs]
-        if self.train_history["auc"] != []:
-            params_csv.append(self.train_history["auc"][-1])
-        with open(result_path + csv_path, "a", newline = "") as csv_file:
-            writer = csv.writer(csv_file)
-            writer. writerow(params_csv)
-
+            
         output = pd.DataFrame()
         output["discriminator_loss"] = self.train_history["discriminator_loss"]
         output["generator_loss"] = self.train_history["generator_loss"]
         for i in range(self.k):
             output["sub_discriminator_loss" + str(i)] = self.train_history["sub_discriminator_loss" + str(i)]
-        #Save all the story for auc and losses during training
-        if self.train_history["auc"] != []:  
-            output["auc"] = self.train_history["auc"]
-            output["auc"].to_csv(result_path + "/auc_story" + str(self.seed) + ".csv",index=False)
+        #Save all the story for auc and losses during training    
         output["discriminator_loss"].to_csv(result_path + "/disc_story" + str(self.seed) + ".csv",index=False)
         output["generator_loss"].to_csv(result_path + "/gen_story" + str(self.seed) + ".csv",index=False)
+        
         for i in range(self.k):
-            output["sub_discriminator_loss" + str(i)].to_csv(result_path + "/sub_disc_stories" + "/sub_disc_story" +  "_" + str(i) + ".csv",index=False)
-
-        #Save the plot
+            output["sub_discriminator_loss" + str(i)].to_csv(result_path + "/sub_disc_stories/" + "/sub_disc_story" +  "_" + str(i) + str(self.seed) + ".csv",index=False)
         self.__plot(result_path)
