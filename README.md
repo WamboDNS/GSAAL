@@ -70,6 +70,6 @@ If not, consider increasing the number of `stop_epochs` and retry. If nothing wo
 _**Note:**__If the experiment has been run using Novelty.py, the graph automatically saved inside the folder `Results/Run_{date}_{dataset}`._
 
 
-<img src='' width="400" height="300">
+<img src='https://github.com/WamboDNS/GSAAL/assets/83516830/b63e210f-dc9f-4494-bc45-89864e22afcd' width="400" height="300">
 
 
