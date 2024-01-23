@@ -84,23 +84,13 @@ if __name__ == '__main__':
     else:
         dataset = load_dataset_path(args.data)
         X_train, X_test, Y_test = load_data("datasets/" + dataset[0] + "/" + dataset[1])  
-    
-    # Exemplary baselines
-    lof = lof.LOF()
-    lof.fit(X_train)
-    scores = lof.decision_function(X_test)
-    fpr, tpr, thresholds = metrics.roc_curve(y_true = Y_test, y_score=scores)
-    print(f"LOF baseline for the data set: {metrics.auc(fpr, tpr)}")
-    iforest = iforest.IForest()
-    iforest.fit(X_train)
-    scores = iforest.decision_function(X_test)
-    fpr, tpr, thresholds = metrics.roc_curve(y_true = Y_test, y_score=scores)
-    print(f"IForest baseline for the data set: {metrics.auc(fpr, tpr)}")
-    # End of baseline
 
-    k = 2*int(np.sqrt(X_train.shape[1]))
-    model = GSAAL(k=k, batch_size=args.batch_size, stop_epochs=args.stop_epochs, lr_g=args.lr_g, lr_d=args.lr_d,
-                     seed=args.seed,momentum=args.momentum)
-    with tf.device("/device:GPU:" + str(args.gpu)):
-        model.fit(X_train, buildPath(args.data), "/" + args.data + ".csv", X_test, Y_test)
-    model.snapshot(buildPath(args.data),"/" + args.data + ".csv")
+    sqrt = int(np.sqrt(X_train.shape[1]))
+    log = int(np.log(X_train.shape[1]))
+    k_list = [log, sqrt, 1.5*sqrt, 2*sqrt, 3*sqrt, 4*sqrt]
+    for k in k_list:
+        model = GSAAL(k=int(k), batch_size=args.batch_size, stop_epochs=args.stop_epochs, lr_g=args.lr_g, lr_d=args.lr_d,
+                        seed=args.seed,momentum=args.momentum)
+        with tf.device("/device:GPU:" + str(args.gpu)):
+            model.fit(X_train, buildPath(args.data), "/" + args.data + ".csv", X_test, Y_test)
+    model.snapshot(buildPath(args.data)+"_"+str(int(k)),"/" + args.data + ".csv")
