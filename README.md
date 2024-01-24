@@ -31,13 +31,13 @@ To launch the model in the same pipeline as done in the original article, run:
 ```
 python Novelty.py
 ```
-This code already handles the data and performs One-class classification experiments. If, in the contrary, one wishes to create it custom code for the execution, one can simply import the file `MSS_GAAL.py`. First, initialize the method by running
+This code already handles the data and performs One-class classification experiments. If, in the contrary, one wishes to create it custom code for the execution, one can simply import the file `GSAAL.py`. First, initialize the method by running
 ```
-MSS_GAAL(k,batch_size,stop_epochs,lr_g,lr_d,seed, momentum)
+GSAAL(k,batch_size,stop_epochs,lr_g,lr_d,seed, momentum)
 ```
 Then, feed a pandas data frame containing the training data as in the following:
 ```
-MSS_GAAL.fit(X_train,X_test,Y_test)
+GSAAL.fit(X_train,X_test,Y_test)
 ```
 The parameters `X_test` and `Y_test` are for a test data set and the labels of it. They are optional, do not take a part in the training process of GSAAL (as is an unsupervised method), and are only there for visualization and testing purposes of the AUC evolution during training. 
 
@@ -64,7 +64,7 @@ To run the experiments we have employed data from [Han et al., 2022]. If one wis
 
 
 # Tuning of 'stop_epochs'
-Our original article contains further information for the training of GSAAL. In essence, this has to be done in two steps, as specified in detail. The code in `MSS_GAAL.py` already handles this for you. The `stop_epoch` parameter the network initializes with is the number of iterations for step 1. After that, the network trains for $10$ extra epochs. We fixed this number as we found it to be enough in all scenarios we tested the method in during preliminary experiments.  How to select the number of `stop_epoch` is more critical. Our recommendation is to run GSAAL for a long number of epochs with default values (between 200 and 300). Observe whether the network converges into an optimum or not by utilizing the generated plots using `MSS_GAAL.snapshot()` (see method in `MSS_GAAL.py`). I.e: "If the graph of $\mathcal{G}$ has stabilized before the selected number of `stop_epochs`. 
+Our original article contains further information for the training of GSAAL. In essence, this has to be done in two steps, as specified in detail. The code in `GSAAL.py` already handles this for you. The `stop_epoch` parameter the network initializes with is the number of iterations for step 1. After that, the network trains for $10$ extra epochs. We fixed this number as we found it to be enough in all scenarios we tested the method in during preliminary experiments.  How to select the number of `stop_epoch` is more critical. Our recommendation is to run GSAAL for a long number of epochs with default values (between 200 and 300). Observe whether the network converges into an optimum or not by utilizing the generated plots using `GSAAL.snapshot()` (see method in `GSAAL.py`). I.e: "If the graph of $\mathcal{G}$ has stabilized before the selected number of `stop_epochs`. 
 If not, consider increasing the number of `stop_epochs` and retry. If nothing works, try changing the training parameters. In our One-class classification experiments, we managed to converge without changing the training parameters, only varying `stop_epochs`. 
 
 _**Note:**__If the experiment has been run using Novelty.py, the graph automatically saved inside the folder `Results/Run_{date}_{dataset}`._
