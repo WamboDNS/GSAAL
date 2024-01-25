@@ -60,8 +60,22 @@ GSAAL's training uses the following parameters:
 `k` is the only training parameter constituting a hyperparameter for the method. We suggest the general use of $k = 30$, but have obtained pretty similar results with $k=20$ in preliminary experiments. Additionally, one could also select a varying parameter of $k = 2\sqrt{d}$, being $d$ the number of features of the training data. 
 
 # Data
-To run the experiments we have employed data from [Han et al., 2022]. If one wishes to run the same experiments we have run, see section **Experiments**. If one wishes to run the data from this benchmark, it suffices to run the script called `src/experiments/Download_datasets.py`. This script will download all original datasets from [Han et al., 2022] and save them in a folder called `datasets/`. It will also create a JSON file called `datasets_files_name.json`. This file is necessary for the code to run, and contains all dataset paths inside the downloaded directory. If one wishes to add a new dataset not included in [Han et al., 2022], it is enough to include it as a .npz file inside one of the subfolders inside `dataset`. After that, include its name in the `json` as the other datasets and add the corresponding path. **This is only for running the methods using Novelty.py or any of our experiment's code. If one wishes to run GSAAL in their custom code, refer to Quick Start**.
+To run the experiments we have employed data from [Han et al., 2022]. If one wishes to run the same experiments we have run, see section **Experiments**. If one wishes to run the data from this benchmark, it suffices to run the script called 
+```
+python experiments/Download_datasets.py
+```
+This script will download all original datasets from [Han et al., 2022] and save them in a folder called `datasets/`. It will also create a JSON file called `datasets_files_name.json`. This file is necessary for the code to run, and contains all dataset paths inside the downloaded directory. If one wishes to add a new dataset not included in [Han et al., 2022], it is enough to include it as a .npz file inside one of the subfolders inside `dataset`. After that, include its name in the `json` as the other datasets and add the corresponding path. **This is only for running the methods using Novelty.py or any of our experiment's code. If one wishes to run GSAAL in their custom code, refer to Quick Start**.
 
+Additionally, we have included several bash files for downloading the datasets directly. 
+  - `get_split_data.sh` downloads the same train-test splits that we used in this experiment. This way, if an interested researcher wants to compare their methodologies or others in the same conditions as ours, they can simply run their experiments and compare with the appendix table.
+  - `get_synthetic_data.sh` downloads the synthetic data used for the MV experiments
+  - `get_data.sh`launches `Download_datasets.py`. Additionally, as mentioned in the appendix of [PAPER], datasets appearing in [Campos et.al. 2016] were used as they appear in that study. This was done as certain differences in length and dimensionality of the datasets were found between the versions showcased by [Han et al., 2022] and [Campos et al., 2016] without any apparent explanation.
+
+**_Note to the reviewers:_** As the links for the downloads contained sensible information about the authors, we have anonymized the URLs, rendering the bash scripts useless for the review process. In their place, we have uploaded the content of the download to a .zip file available through CMT. Donwload_datasets.py is still operational as we download the datasets directly from the provided source in [Han et al., 2022]
+
+#Other experiments
+
+To run the other experiments showcased in [PAPER], check their respective branch in the repository and follow the README.md.
 
 # Tuning of 'stop_epochs'
 Our original article contains further information for the training of GSAAL. In essence, this has to be done in two steps, as specified in detail. The code in `GSAAL.py` already handles this for you. The `stop_epoch` parameter the network initializes with is the number of iterations for step 1. After that, the network trains for $10$ extra epochs. We fixed this number as we found it to be enough in all scenarios we tested the method in during preliminary experiments.  How to select the number of `stop_epoch` is more critical. Our recommendation is to run GSAAL for a long number of epochs with default values (between 200 and 300). Observe whether the network converges into an optimum or not by utilizing the generated plots using `GSAAL.snapshot()` (see method in `GSAAL.py`). I.e: "If the graph of $\mathcal{G}$ has stabilized before the selected number of `stop_epochs`. 
