@@ -43,7 +43,7 @@ class GSAAL:
         """
        
         self.__set_seed()
-        epochs = self.stop_epochs + 10
+        epochs = self.stop_epochs + 10 #Total epochs are always stop_epochs + 10. The last 10 epochs correspond to the step two of the GAAL training (see paper)
         stop = 0 #Control variable for the training of the generator
         latent_size = X.shape[1]
         train_size = X.shape[0]
@@ -72,7 +72,7 @@ class GSAAL:
             
             
         self.storage["sub_discriminator_sum"] /= self.k
-        # Model with the mean decisions of Discriminators (mean Adversary). Used to train the generator.
+        # Model with the mean of the k losses. We use this to train the Generator
         self.storage["combine_model"] = keras.Model(latent_input, self.storage["sub_discriminator_sum"])
         
         self.storage["combine_model"].compile(optimizer=keras.optimizers.SGD(learning_rate=self.lr_g, momentum = self.momentum, weight_decay = 0.1), loss='binary_crossentropy')
@@ -116,7 +116,8 @@ class GSAAL:
                     else:  #If the discriminator is in equilibrium, evaluate it
                         self.storage["sub_discriminator_loss" + str(id)] += self.storage["sub_discriminator" + str(id)].evaluate(batch[:,self.subspaces[id]], batch_labels, verbose = 0)
                     
-                    if  self.storage["sub_discriminator_loss" + str(id)] <= 0.5 and epoch >= self.stop_epochs/self.k :
+                    if  self.storage["sub_discriminator_loss" + str(id)] <= 0.5 and epoch >= self.stop_epochs/self.k : #Eq is reached approx in V(G,D)=0.3 using the stable binary crossentropy.
+                                                                                                                       #We stop a little bit earlier to avoid overfitting.
                         self.storage["stop" + str(id)] = 1
                     if  self.storage["sub_discriminator_loss" + str(id)] >= 1 and epoch >= self.stop_epochs/self.k :
                         self.storage["stop" + str(id)] = 0

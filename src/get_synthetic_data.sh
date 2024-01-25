@@ -1,6 +1,6 @@
 #!/bin/bash
 
-file_url="https://bwsyncandshare.kit.edu/s/k8PFJsXLwz8W8aR/download"
+file_url="-url--"
 destination_path="./"
 zip_file_name="synthetic_data.zip"
 extracted_folder_name="synthetic_data"

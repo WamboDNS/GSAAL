@@ -1,6 +1,6 @@
 #!/bin/bash
 
-file_url="https://bwsyncandshare.kit.edu/s/KbPSN9g5KYoPWpw/download"
+file_url="--url--"
 destination_path="./experiments/datasets/"
 zip_file_name="elki.zip"
 extracted_folder_name="elki"

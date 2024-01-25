@@ -1,6 +1,6 @@
 #!/bin/bash
 
-file_url="https://bwsyncandshare.kit.edu/s/szJJCWSYoTspiLQ/download"
+file_url="--url--"
 destination_path="./experiments/datasets/"
 zip_file_name="dataset_splits.zip"
 extracted_folder_name="dataset_splits"
