@@ -1,4 +1,5 @@
 from GSAAL import GSAAL
+from GSAAL_FS import GSAAL as GSAAL_FS
 from experiments.get_dataset import load_dataset_path
 import keras
 import tensorflow as tf
@@ -73,34 +74,36 @@ def parse_arguments():
     parser.add_argument("--lr_d", type=float, default=0.01)
     parser.add_argument("--seed", type=int, default=777)
     parser.add_argument("--momentum", type=float, default=0.9)
-
+    parser.add_argument("--k", default="scale")
+    parser.add_argument("--full_space", type=bool, default=False)
     
     return parser.parse_args()
 
 if __name__ == '__main__':
     args = parse_arguments()
+    if args.full_space == False: subspace_yesno = "y"   # This check helps with storing the results
+    else: subspace_yesno = "n" 
+    if args.k != 1: ensemble_yesno = "y"
+    else: ensemble_yesno = "n"
+
     if args.data in ["Arrhythmia", "Annthyroid","Cardiotocography","InternetAds","Ionosphere","SpamBase","Waveform"]:
         X_train, X_test, Y_test = get_elki_data(args.data)
     else:
         dataset = load_dataset_path(args.data)
         X_train, X_test, Y_test = load_data("datasets/" + dataset[0] + "/" + dataset[1])  
     
-    # Exemplary baselines
-    lof = lof.LOF()
-    lof.fit(X_train)
-    scores = lof.decision_function(X_test)
-    fpr, tpr, thresholds = metrics.roc_curve(y_true = Y_test, y_score=scores)
-    print(f"LOF baseline for the data set: {metrics.auc(fpr, tpr)}")
-    iforest = iforest.IForest()
-    iforest.fit(X_train)
-    scores = iforest.decision_function(X_test)
-    fpr, tpr, thresholds = metrics.roc_curve(y_true = Y_test, y_score=scores)
-    print(f"IForest baseline for the data set: {metrics.auc(fpr, tpr)}")
-    # End of baseline
+    if args.k == "scale": k = 2*int(np.sqrt(X_train.shape[1]))
+    elif(type(args.k)==int): k = args.k
 
-    k = 2*int(np.sqrt(X_train.shape[1]))
-    model = GSAAL(k=k, batch_size=args.batch_size, stop_epochs=args.stop_epochs, lr_g=args.lr_g, lr_d=args.lr_d,
+    if args.full_space == False: model = GSAAL(k=k, batch_size=args.batch_size, 
+                                                stop_epochs=args.stop_epochs, 
+                                                lr_g=args.lr_g, lr_d=args.lr_d,
+                                                seed=args.seed,
+                                                momentum=args.momentum)
+    else: GSAAL_FS(k=k, batch_size=args.batch_size, 
+                   stop_epochs=args.stop_epochs, 
+                   lr_g=args.lr_g, lr_d=args.lr_d,
                      seed=args.seed,momentum=args.momentum)
     with tf.device("/device:GPU:" + str(args.gpu)):
         model.fit(X_train, buildPath(args.data), "/" + args.data + ".csv", X_test, Y_test)
-    model.snapshot(buildPath(args.data),"/" + args.data + ".csv")
+    model.snapshot(buildPath(args.data)+ "_" + subspace_yesno + ensemble_yesno,"/" + args.data + ".csv")
