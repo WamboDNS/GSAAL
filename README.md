@@ -43,6 +43,10 @@ The parameters `X_test` and `Y_test` are for a test data set and the labels of i
 
 The code in `Novelty.py` includes the possibility of changing the parameters for the training of the model, as detailed next.
 
+## Other experiments
+Besides the One-class classification experiments featured in this branch, we offered the code for reproducing all of the remaining experiments in all other branches in this repository. 
+***CONFERENCE VERSION:*** Our privatization tool does not support multiple branches. Therefore, we uploaded all branches as supplementary material in a ```.zip``` file. 
+
 # Parameters
 GSAAL's training uses the following parameters:
 
