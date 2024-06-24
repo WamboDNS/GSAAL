@@ -1,12 +1,12 @@
 # Generative Subspace Adversarial Active Learning for Unsupervised Outlier Detection
 
-GSAAL focuses on detecting outliers while incorporating the information of the feature subspaces. This is the official implementation of GSAAL introduced by: [PAPER]
+GSAAL focuses on detecting outliers while incorporating the information of the feature subspaces. This is the official implementation of [GSAAL](https://arxiv.org/abs/2404.14451)
 
 Please cite the paper if you use our code. Thank you :)
 
 # Details
 
-In a nutshell, GSAAL consists of one Generator and K Discriminators. Each of these K Discriminators trains over their own, unique Feature Subspace. The theoretical derivations in [Paper] show how this methodology can aid outlier detection in cases where outliers can not be detected in the full space of features. 
+In a nutshell, GSAAL consists of one Generator and K Discriminators. Each of these K Discriminators trains over their own, unique Feature Subspace. The [theoretical derivations](https://arxiv.org/abs/2404.14451) show how this methodology can aid outlier detection in cases where outliers can not be detected in the full space of features. 
 
 ## The Role of Active Learning
 
@@ -77,7 +77,7 @@ Additionally, we have included several bash files for downloading the datasets d
 
 **_Note to the reviewers:_** As the links for the downloads contained sensible information about the authors, we have anonymized the URLs, rendering the bash scripts useless for the review process. In their place, we have uploaded the content of the download to a .zip file available through CMT. Donwload_datasets.py is still operational as we download the datasets directly from the provided source in [Han et al., 2022]
 
-#Other experiments
+# Other experiments
 
 To run the other experiments showcased in [PAPER], check their respective branch in the repository and follow the README.md.
 
@@ -85,7 +85,7 @@ To run the other experiments showcased in [PAPER], check their respective branch
 Our original article contains further information for the training of GSAAL. In essence, this has to be done in two steps, as specified in detail. The code in `GSAAL.py` already handles this for you. The `stop_epoch` parameter the network initializes with is the number of iterations for step 1. After that, the network trains for $10$ extra epochs. We fixed this number as we found it to be enough in all scenarios we tested the method in during preliminary experiments.  How to select the number of `stop_epoch` is more critical. Our recommendation is to run GSAAL for a long number of epochs with default values (between 200 and 300). Observe whether the network converges into an optimum or not by utilizing the generated plots using `GSAAL.snapshot()` (see method in `GSAAL.py`). I.e: "If the graph of $\mathcal{G}$ has stabilized before the selected number of `stop_epochs`. 
 If not, consider increasing the number of `stop_epochs` and retry. If nothing works, try changing the training parameters. In our One-class classification experiments, we managed to converge without changing the training parameters, only varying `stop_epochs`. 
 
-_**Note:**__If the experiment has been run using Novelty.py, the graph automatically saved inside the folder `Results/Run_{date}_{dataset}`._
+**_Note:_** If the experiment has been run using Novelty.py, the graph automatically saved inside the folder `Results/Run_{date}_{dataset}`._
 
 
 <img src='https://github.com/WamboDNS/GSAAL/assets/83516830/b63e210f-dc9f-4494-bc45-89864e22afcd' width="400" height="300">
