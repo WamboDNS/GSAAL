@@ -75,7 +75,6 @@ Additionally, we have included several bash files for downloading the datasets d
   - `get_synthetic_data.sh` downloads the synthetic data used for the MV experiments
   - `get_data.sh`launches `Download_datasets.py`. Additionally, as mentioned in the appendix of [PAPER], datasets appearing in [Campos et.al. 2016] were used as they appear in that study. This was done as certain differences in length and dimensionality of the datasets were found between the versions showcased by [Han et al., 2022] and [Campos et al., 2016] without any apparent explanation.
 
-**_Note to the reviewers:_** As the links for the downloads contained sensible information about the authors, we have anonymized the URLs, rendering the bash scripts useless for the review process. In their place, we have uploaded the content of the download to a .zip file available through CMT. Donwload_datasets.py is still operational as we download the datasets directly from the provided source in [Han et al., 2022]
 
 # Other experiments
 
@@ -85,9 +84,10 @@ To run the other experiments showcased in [PAPER], check their respective branch
 Our original article contains further information for the training of GSAAL. In essence, this has to be done in two steps, as specified in detail. The code in `GSAAL.py` already handles this for you. The `stop_epoch` parameter the network initializes with is the number of iterations for step 1. After that, the network trains for $10$ extra epochs. We fixed this number as we found it to be enough in all scenarios we tested the method in during preliminary experiments.  How to select the number of `stop_epoch` is more critical. Our recommendation is to run GSAAL for a long number of epochs with default values (between 200 and 300). Observe whether the network converges into an optimum or not by utilizing the generated plots using `GSAAL.snapshot()` (see method in `GSAAL.py`). I.e: "If the graph of $\mathcal{G}$ has stabilized before the selected number of `stop_epochs`. 
 If not, consider increasing the number of `stop_epochs` and retry. If nothing works, try changing the training parameters. In our One-class classification experiments, we managed to converge without changing the training parameters, only varying `stop_epochs`. 
 
-**_Note:_** If the experiment has been run using Novelty.py, the graph automatically saved inside the folder `Results/Run_{date}_{dataset}`._
+**_Note:_** If the experiment has been run using Novelty.py, the graph is automatically saved inside the folder `Results/Run_{date}_{dataset}`._
+
+<img src='https://github.com/user-attachments/assets/7f0aabcc-950e-40da-b528-060127e7f0a9' width="600" height="300">
 
 
-<img src='https://github.com/WamboDNS/GSAAL/assets/83516830/b63e210f-dc9f-4494-bc45-89864e22afcd' width="400" height="300">
 
 
